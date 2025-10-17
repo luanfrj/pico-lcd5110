@@ -105,14 +105,73 @@ void set_cursor(unsigned char x, unsigned char y)
     send_command(y_addr);
 }
 
-void write_pixel(uint8_t x, uint8_t y) {
+void write_pixel(uint8_t x, uint8_t y, uint8_t value) {
     if (x < 0 || x > 83 || y < 0 || y > 47) {
         return;
     }
-
+    value = value & 1;
     uint8_t bank = y / 8;
-    uint8_t data = buffer[x + bank * 84] | 1 << (y % 8);
-    buffer[x + bank * 84] = data;
+    if (value) {
+        buffer[x + bank * 84] = buffer[x + bank * 84] | 1 << (y % 8);
+    } else {
+        buffer[x + bank * 84] = buffer[x + bank * 84] & ~(1 << (y % 8));
+    }
+}
+
+void draw_line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+{
+    int8_t w = x2 - x1;
+    int8_t h = y2 - y1;
+    int8_t dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+
+    if (w<0)
+        dx1 = -1;
+    else
+        if (w>0)
+            dx1 = 1;
+    
+    if (h<0)
+        dy1 = -1;
+    else
+        if (h>0)
+            dy1 = 1;
+    if (w<0)
+        dx2 = -1;
+    else
+        if (w>0)
+            dx2 = 1;
+
+    uint8_t longest = abs(w) ;
+    uint8_t shortest = abs(h) ;
+    if (!(longest>shortest))
+    {
+        longest = abs(h) ;
+        shortest = abs(w) ;
+        if (h<0)
+            dy2 = -1;
+        else
+            if (h>0)
+                dy2 = 1;
+        dx2 = 0 ;
+    }
+    uint8_t numerator = longest >> 1;
+    for (uint8_t i = 0; i <= longest; i++)
+    {
+        write_pixel(x1, y1, 0x01);
+
+        numerator += shortest ;
+        if (!(numerator<longest))
+        {
+            numerator -= longest;
+            x1 += dx1;
+            y1 += dy1;
+        }
+        else
+        {
+            x1 += dx2;
+            y1 += dy2;
+        }
+    }
 }
 
 void draw_circle(uint8_t x0, uint8_t y0, uint8_t radius)
@@ -123,14 +182,14 @@ void draw_circle(uint8_t x0, uint8_t y0, uint8_t radius)
 
     while (x >= y)
     {
-        write_pixel(x0 + x, y0 + y);
-        write_pixel(x0 + y, y0 + x);
-        write_pixel(x0 - y, y0 + x);
-        write_pixel(x0 - x, y0 + y);
-        write_pixel(x0 - x, y0 - y);
-        write_pixel(x0 - y, y0 - x);
-        write_pixel(x0 + y, y0 - x);
-        write_pixel(x0 + x, y0 - y);
+        write_pixel(x0 + x, y0 + y, 1);
+        write_pixel(x0 + y, y0 + x, 1);
+        write_pixel(x0 - y, y0 + x, 1);
+        write_pixel(x0 - x, y0 + y, 1);
+        write_pixel(x0 - x, y0 - y, 1);
+        write_pixel(x0 - y, y0 - x, 1);
+        write_pixel(x0 + y, y0 - x, 1);
+        write_pixel(x0 + x, y0 - y, 1);
 
         if (err <= 0)
         {
@@ -147,15 +206,16 @@ void draw_circle(uint8_t x0, uint8_t y0, uint8_t radius)
 
 void print_char_basic(char c, uint8_t x, uint8_t y)
 {
-    unsigned char i;
+    uint8_t i, j, temp;
     
     for (i = 0; i < 5; i++)
     {
-        set_cursor(x+i, y);
-        send_data(FontBasic[c - 0x20][i]);
+        temp = FontBasic[c - 0x20][i] ;
+        for (j = 0; j < 8;j++) {
+            write_pixel(x + i, y + j, temp & 0x01); 
+            temp = temp >> 1;
+        }
     }
-    set_cursor(x+i, y);
-    send_data(0x00);
 }
 
 
@@ -185,13 +245,12 @@ void print_char_mega(char c, uint8_t x, uint8_t y)
 void print_string(char *str, font_t font, uint8_t x, uint8_t y)
 {
     uint8_t i = 0;
-    set_cursor(x, y);
     while(*str)
     {
         switch (font)
         {
             case BASIC:
-                print_char_basic(*str, x + 5 * i, y);
+                print_char_basic(*str, x + 6 * i, y);
                 break;
             case MEGA:
                 print_char_mega(*str, x + 16 * i, y);

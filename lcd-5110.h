@@ -27,7 +27,9 @@ void update_display();
 
 void set_cursor(unsigned char x, unsigned char y);
 
-void write_pixel(unsigned char x, unsigned char y);
+void write_pixel(uint8_t x, uint8_t y, uint8_t value);
+
+void draw_line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
 
 void draw_circle(uint8_t x0, uint8_t y0, uint8_t radius);
 

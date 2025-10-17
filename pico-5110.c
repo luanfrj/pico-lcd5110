@@ -40,18 +40,23 @@ int main() {
 
     gpio_put(LED_PIN, 1);
 
-    //print_string("Ola Mundo!!!", BASIC, 0, 0);
+    draw_line(0,0,83,0);
+    draw_line(0,0,0,47);
+    draw_line(83,0,83,47);
+    draw_line(0,47,83,47);
+
+    print_string("Ola Mundo!", BASIC, 3, 3);
+    print_string("Ola Mundo!", BASIC, 3, 13);
+    update_display();
 
     uint8_t raio = 2;
     while(true) {
         sleep_ms(1000);
-        draw_circle(42, 24, raio);
         update_display();
-        raio = raio + 2;
-        if (raio > 23) {
-            raio = 2;
-            clear_buffer();
-            update_display();
+        
+        if (raio < 15) {
+            draw_circle(42, 24, raio);
+            raio = raio + 2;
         }
     }
     return 0;
