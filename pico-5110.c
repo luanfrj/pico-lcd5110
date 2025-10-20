@@ -34,8 +34,6 @@ int main() {
     // Enable UART so we can print status output
     stdio_init_all();
 
-    int cont = 0;
-
     sleep_ms(1000);
 
     gpio_put(LED_PIN, 1);
@@ -45,19 +43,18 @@ int main() {
     draw_line(83,0,83,47);
     draw_line(0,47,83,47);
 
-    print_string("Ola Mundo!", BASIC, 3, 3);
-    print_string("Ola Mundo!", BASIC, 3, 13);
+    print_string("Brasil", BASIC8, 3, 3);
+    print_string("2025", BASIC8, 3, 13);
+    print_string("LUAN", BASIC8, 3, 23);
     update_display();
 
-    uint8_t raio = 2;
+    uint8_t cont;
+    for (cont = 0; cont < 5; cont++) {
+        draw_circle(8 + 10 * cont, 40, 5);
+    }
+    update_display();
     while(true) {
-        sleep_ms(1000);
-        update_display();
-        
-        if (raio < 15) {
-            draw_circle(42, 24, raio);
-            raio = raio + 2;
-        }
+
     }
     return 0;
 }

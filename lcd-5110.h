@@ -15,7 +15,7 @@
 #define CLK	14
 #define BL	15
 
-typedef enum {BASIC, MEGA} font_t;
+typedef enum {BASIC, MEGA, BASIC8} font_t;
 
 void init_lcd();
 

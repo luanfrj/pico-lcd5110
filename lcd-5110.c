@@ -65,7 +65,7 @@ void init_lcd()
     // start
     gpio_put(CE, 0);
     send_command(0x21);
-    send_command(0x9E);    // set LCD Vop (contrast)
+    send_command(0x9B);    // set LCD Vop (contrast)
     send_command(0x20);    // LCD basic commands
     send_command(0x0C);
 
@@ -218,6 +218,20 @@ void print_char_basic(char c, uint8_t x, uint8_t y)
     }
 }
 
+void print_char_basic8(char c, uint8_t x, uint8_t y)
+{
+    uint8_t i, j, temp;
+    
+    for (i = 0; i < 8; i++)
+    {
+        temp = font8x8_basic[c][i] ;
+        for (j = 0; j < 8;j++) {
+            write_pixel(x + j, y + i, temp & 0x01); 
+            temp = temp >> 1;
+        }
+    }
+}
+
 
 void print_char_mega(char c, uint8_t x, uint8_t y)
 {
@@ -251,6 +265,9 @@ void print_string(char *str, font_t font, uint8_t x, uint8_t y)
         {
             case BASIC:
                 print_char_basic(*str, x + 6 * i, y);
+                break;
+            case BASIC8:
+                print_char_basic8(*str, x + 8 * i, y);
                 break;
             case MEGA:
                 print_char_mega(*str, x + 16 * i, y);
